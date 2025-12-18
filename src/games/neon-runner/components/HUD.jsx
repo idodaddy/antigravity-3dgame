@@ -66,7 +66,7 @@ export default function HUD() {
                     >
                         START GAME
                     </button>
-                    <p style={{ marginTop: '20px' }}>Press Space or Click to Start</p>
+                    <p style={{ marginTop: '20px' }}>Press Space, Click, or Tap to Start</p>
                 </div>
             )}
 
@@ -118,7 +118,7 @@ export default function HUD() {
                             Try Again
                         </button>
                     </div>
-                    <p style={{ marginTop: '30px', fontSize: '14px', opacity: 0.6, fontFamily: 'Outfit, sans-serif' }}>Press Space to Restart</p>
+                    <p style={{ marginTop: '30px', fontSize: '14px', opacity: 0.6, fontFamily: 'Outfit, sans-serif' }}>Press Space or Tap to Restart</p>
                 </div>
             )}
         </div>
