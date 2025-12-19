@@ -1,5 +1,6 @@
 import React from 'react'
 import { useStore } from '../store'
+import GameEndOverlay from '../../../components/GameEndOverlay'
 
 export default function HUD() {
     const score = useStore(state => state.score)
@@ -70,57 +71,7 @@ export default function HUD() {
                 </div>
             )}
 
-            {gameOver && (
-                <div style={{ pointerEvents: 'auto', textAlign: 'center', background: 'rgba(0,0,0,0.8)', padding: '40px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
-                    <h1 style={{ fontSize: '80px', marginBottom: '10px', color: '#ff0055', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold' }}>GAME OVER</h1>
-                    <p style={{ fontSize: '32px', marginBottom: '40px', color: '#fff', fontFamily: 'Outfit, sans-serif' }}>Final Score: <span style={{ color: '#00ffcc' }}>{Math.floor(score)}</span></p>
-
-                    <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-                        <button
-                            onClick={() => window.location.href = '/'}
-                            style={{
-                                padding: '15px 30px',
-                                fontSize: '20px',
-                                background: 'transparent',
-                                border: '2px solid #fff',
-                                color: 'white',
-                                cursor: 'pointer',
-                                borderRadius: '10px',
-                                fontFamily: 'Rajdhani, sans-serif',
-                                fontWeight: 'bold',
-                                textTransform: 'uppercase',
-                                transition: 'all 0.3s'
-                            }}
-                            onMouseOver={(e) => { e.target.style.background = 'rgba(255,255,255,0.1)' }}
-                            onMouseOut={(e) => { e.target.style.background = 'transparent' }}
-                        >
-                            Home
-                        </button>
-                        <button
-                            onClick={reset}
-                            style={{
-                                padding: '15px 40px',
-                                fontSize: '24px',
-                                background: 'linear-gradient(90deg, #00ffcc, #0099ff)',
-                                border: 'none',
-                                color: 'black',
-                                cursor: 'pointer',
-                                borderRadius: '10px',
-                                boxShadow: '0 0 30px rgba(0, 255, 204, 0.5)',
-                                fontFamily: 'Rajdhani, sans-serif',
-                                fontWeight: 'bold',
-                                textTransform: 'uppercase',
-                                transition: 'all 0.3s'
-                            }}
-                            onMouseOver={(e) => { e.target.style.transform = 'scale(1.05)' }}
-                            onMouseOut={(e) => { e.target.style.transform = 'scale(1)' }}
-                        >
-                            Try Again
-                        </button>
-                    </div>
-                    <p style={{ marginTop: '30px', fontSize: '14px', opacity: 0.6, fontFamily: 'Outfit, sans-serif' }}>Press Space or Tap to Restart</p>
-                </div>
-            )}
+            {gameOver && <GameEndOverlay score={Math.floor(score)} onRestart={reset} />}
         </div>
     )
 }

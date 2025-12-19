@@ -58,6 +58,8 @@ function ResponsiveCamera() {
 
         // Smoothly interpolate
         camera.position.z += (newZ - camera.position.z) * 0.1
+        // Maintain height
+        if (camera.position.y < 5.8) camera.position.y += (6 - camera.position.y) * 0.1
     })
     return null
 }
@@ -66,7 +68,7 @@ export default function Game() {
     return (
         <div className="w-full h-screen bg-[#050505]">
             <Canvas shadows>
-                <PerspectiveCamera makeDefault position={[0, 3, 6]} rotation={[-0.2, 0, 0]} fov={60} />
+                <PerspectiveCamera makeDefault position={[0, 6, 9]} rotation={[-0.4, 0, 0]} fov={60} />
                 <fog attach="fog" args={['#000', 10, 90]} />
 
                 <ambientLight intensity={0.5} />

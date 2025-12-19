@@ -1,13 +1,11 @@
 import React, { useRef, useState, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { createSegmentContent, SEGMENT_LENGTH, OBSTACLE_CHANCE, JUMP_DURATION, JUMP_HEIGHT } from '../utils/generator'
 import { useStore } from '../store'
 import * as THREE from 'three'
 import { playCrashSound, playCollectSound } from '../audio'
 
-const SEGMENT_LENGTH = 20
-const OBSTACLE_CHANCE = 0.5 // Increased density
-const JUMP_HEIGHT = 2.5
-const JUMP_DURATION = 0.6
+// Constants imported from generator
 const BASE_SPEED = 10 // Approximate base speed for calculation
 
 function Obstacle({ position }) {
@@ -91,17 +89,30 @@ export default function Track() {
     const lastHitTime = useRef(0)
     const lastMineralState = useRef({ lane: 0, height: 0.5 })
 
-    // Initial segments
     // Initial segments function to be reused
+    const nextSpawnOffset = useRef(0)
+
     const createInitialSegments = () => {
         const initial = []
+        nextSpawnOffset.current = 0 // Reset
+        // Use current speed or fallback to BASE_SPEED (10) if store not yet ready
+        // Note: speed variable here comes from useStore hook at top of component.
+        // During first render, it should be the initial state (0 or 10). 
+        // If initial state is 0 (game not started), we should use BASE_SPEED for generation math.
+        const currentSpeed = speed > 0 ? speed : BASE_SPEED
+
         for (let i = 0; i < 10; i++) {
-            const obs = i < 1 ? [] : generateObstacles()
-            const mins = i < 1 ? [] : generateMinerals(obs)
+            if (i < 1) {
+                initial.push({ z: 0, obstacles: [], minerals: [] })
+                continue
+            }
+            const { obstacles, minerals, nextOffset } = createSegmentContent(nextSpawnOffset.current, currentSpeed)
+            nextSpawnOffset.current = nextOffset
+
             initial.push({
                 z: -i * SEGMENT_LENGTH,
-                obstacles: obs,
-                minerals: mins
+                obstacles,
+                minerals
             })
         }
         return initial
@@ -117,116 +128,7 @@ export default function Track() {
         }
     }, [gameStarted])
 
-    function generateObstacles() {
-        const obs = []
-        // 3 lanes: -3, 0, 3
-        const lanes = [-3, 0, 3]
-        if (Math.random() < OBSTACLE_CHANCE) {
-            const lane = lanes[Math.floor(Math.random() * lanes.length)]
-            obs.push({ position: [lane, 0.4, Math.random() * SEGMENT_LENGTH] })
-
-            // Try to add a second obstacle in a different lane
-            if (Math.random() < 0.5) {
-                const lane2 = lanes[Math.floor(Math.random() * lanes.length)]
-                if (lane2 !== lane) {
-                    obs.push({ position: [lane2, 0.4, Math.random() * SEGMENT_LENGTH] })
-                }
-            }
-        }
-        return obs
-    }
-
-    function generateMinerals(obstacles) {
-        const mins = []
-        const lanes = [-3, 0, 3]
-
-        // We generate patterns instead of fixed spacing
-        let z = 2
-        while (z < SEGMENT_LENGTH - 5) {
-            // Decide pattern: 0 = Ground Line, 1 = Jump Arc
-            const pattern = Math.random() < 0.4 ? 1 : 0
-            const lane = lanes[Math.floor(Math.random() * lanes.length)]
-
-            let currentPattern = pattern // Use a local variable to allow modification
-
-            if (currentPattern === 1) {
-                // JUMP ARC (6 minerals)
-                // Total distance covered during jump = Speed * Duration
-                // Use current speed for accurate placement
-                // Stretch by 1.1 to match perceived jump length
-                const jumpDist = (speed * JUMP_DURATION) * 1.1
-                const spacing = jumpDist / 6
-
-                // Diagonal Arc Logic
-                // 50% chance to switch lane during jump
-                let endLane = lane
-                if (Math.random() < 0.5) {
-                    const possibleLanes = lanes.filter(l => Math.abs(l - lane) === 3) // Adjacent lanes only
-                    if (possibleLanes.length > 0) {
-                        endLane = possibleLanes[Math.floor(Math.random() * possibleLanes.length)]
-                    }
-                }
-
-                // Check for obstacles at Takeoff (startLane) and Landing (endLane)
-                const takeoffBlocked = obstacles.some(obs => obs.position[0] === lane && Math.abs(obs.position[2] - z) < 3.0)
-                const landingBlocked = obstacles.some(obs => obs.position[0] === endLane && Math.abs(obs.position[2] - (z + jumpDist)) < 3.0)
-
-                if (!takeoffBlocked && !landingBlocked) {
-                    for (let i = 0; i < 6; i++) {
-                        const progress = i / 5 // 0 to 1
-                        const y = Math.sin(progress * Math.PI) * JUMP_HEIGHT + 0.3
-
-                        // Lerp X position for diagonal arc
-                        const x = lane + (endLane - lane) * progress
-
-                        const zPos = z + (i * spacing)
-
-                        mins.push({ position: [x, y, zPos], id: Math.random() })
-                    }
-                    // Advance Z past the arc
-                    z += jumpDist + 2
-                } else {
-                    // Blocked, try ground line instead
-                    currentPattern = 0
-                }
-            }
-
-            if (currentPattern === 0) {
-                // GROUND LINE (3 minerals) - Now with Zig-Zag
-                // 50% chance to zig-zag
-                const zigZag = Math.random() < 0.5
-                let currentLane = lane
-
-                for (let i = 0; i < 3; i++) {
-                    const zPos = z + (i * 2)
-
-                    if (zigZag && i > 0) {
-                        // Try to switch to adjacent lane
-                        const possibleLanes = lanes.filter(l => Math.abs(l - currentLane) === 3)
-                        if (possibleLanes.length > 0) {
-                            const nextLane = possibleLanes[Math.floor(Math.random() * possibleLanes.length)]
-                            // Check if next lane is safe
-                            const blocked = obstacles.some(obs => obs.position[0] === nextLane && Math.abs(obs.position[2] - zPos) < 3.0)
-                            if (!blocked) {
-                                currentLane = nextLane
-                            }
-                        }
-                    }
-
-                    // Check obstacle collision (Increased buffer to 3.0)
-                    const obstacleHit = obstacles.some(obs => {
-                        return obs.position[0] === currentLane && Math.abs(obs.position[2] - zPos) < 3.0
-                    })
-
-                    if (!obstacleHit) {
-                        mins.push({ position: [currentLane, 0.5, zPos], id: Math.random() })
-                    }
-                }
-                z += 6 + 2
-            }
-        }
-        return mins
-    }
+    // Removing old generateObstacles/generateMinerals separate functions since they are merged
 
     useFrame((state, delta) => {
         if (!gameStarted || gameOver) return
@@ -242,12 +144,17 @@ export default function Track() {
             if (next[0].z > SEGMENT_LENGTH) {
                 next.shift()
                 const lastZ = next[next.length - 1].z
-                const obs = generateObstacles()
-                const mins = generateMinerals(obs)
+
+                // GENERATION SYNC
+                // Fallback to BASE_SPEED if speed is invalid/0 to prevent infinite NaN loops
+                const currentSpeed = (speed && speed > 0) ? speed : BASE_SPEED
+                const { obstacles, minerals, nextOffset } = createSegmentContent(nextSpawnOffset.current, currentSpeed)
+                nextSpawnOffset.current = nextOffset
+
                 next.push({
                     z: lastZ - SEGMENT_LENGTH,
-                    obstacles: obs,
-                    minerals: mins
+                    obstacles,
+                    minerals
                 })
             }
             return next

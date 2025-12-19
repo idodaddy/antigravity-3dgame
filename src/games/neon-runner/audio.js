@@ -98,21 +98,37 @@ export const playCollectSound = () => {
     const ctx = getAudioContext()
     const t = ctx.currentTime
 
-    // High-pitched chime
-    const osc = ctx.createOscillator()
-    osc.type = 'sine'
-    osc.frequency.setValueAtTime(1200, t)
-    osc.frequency.exponentialRampToValueAtTime(1800, t + 0.1)
+    // Cheerful "Ting-Ting" (Two high pitched bell tones)
 
-    const gain = ctx.createGain()
-    gain.gain.setValueAtTime(0.1, t)
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3)
+    // First Tone
+    const osc1 = ctx.createOscillator()
+    osc1.type = 'sine'
+    osc1.frequency.setValueAtTime(1567.98, t) // G6
 
-    osc.connect(gain)
-    gain.connect(ctx.destination)
+    const gain1 = ctx.createGain()
+    gain1.gain.setValueAtTime(0, t)
+    gain1.gain.linearRampToValueAtTime(0.3, t + 0.01)
+    gain1.gain.exponentialRampToValueAtTime(0.01, t + 0.5)
 
-    osc.start(t)
-    osc.stop(t + 0.3)
+    osc1.connect(gain1)
+    gain1.connect(ctx.destination)
+    osc1.start(t)
+    osc1.stop(t + 0.5)
+
+    // Second Tone (Harmonic/Harmony) slightly delayed
+    const osc2 = ctx.createOscillator()
+    osc2.type = 'sine'
+    osc2.frequency.setValueAtTime(2093.00, t + 0.05) // C7
+
+    const gain2 = ctx.createGain()
+    gain2.gain.setValueAtTime(0, t + 0.05)
+    gain2.gain.linearRampToValueAtTime(0.2, t + 0.06)
+    gain2.gain.exponentialRampToValueAtTime(0.01, t + 0.6)
+
+    osc2.connect(gain2)
+    gain2.connect(ctx.destination)
+    osc2.start(t + 0.05)
+    osc2.stop(t + 0.6)
 }
 
 // Melodic BGM Sequence (C Minor Arpeggio with variations)

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useStore } from '../store'
-import Button from '../../../components/Button'
+import GameEndOverlay from '../../../components/GameEndOverlay'
 
 export default function HUD() {
     const score = useStore(state => state.score)
@@ -18,25 +18,7 @@ export default function HUD() {
             </div>
 
             {/* Game Over */}
-            {gameOver && (
-                <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center pointer-events-auto animate-fade-in p-4 text-center">
-                    <h2 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 mb-4 drop-shadow-lg">
-                        GAME OVER
-                    </h2>
-                    <p className="text-xl md:text-2xl text-white mb-8 font-light">
-                        Tower Height: <span className="text-cyan-400 font-bold">{score}</span>
-                    </p>
-
-                    <div className="flex gap-4">
-                        <Button to="/" variant="outline">
-                            Exit
-                        </Button>
-                        <Button onClick={reset} variant="primary" className="px-8">
-                            Try Again
-                        </Button>
-                    </div>
-                </div>
-            )}
+            {gameOver && <GameEndOverlay score={score} onRestart={reset} />}
 
             {/* Controls Hint */}
             {!gameOver && (
