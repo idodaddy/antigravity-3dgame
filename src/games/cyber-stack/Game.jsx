@@ -28,16 +28,35 @@ function GameContent() {
     useEffect(() => {
         startGame()
 
-        const handleKeyDown = (e) => {
-            if (e.code === 'Space') {
-                const { gameStarted, gameOver, startGame, placeBlock } = useStore.getState()
-                if (!gameStarted) startGame()
-                else if (!gameOver) placeBlock()
-            }
+        let lastActionTime = 0
+
+        const handleAction = (e) => {
+            // Prevent default to avoid double-firing on some devices if both touch and click are handled
+            // and to prevent browser zooming/scrolling.
+            if (e.cancelable && e.type !== 'keydown') e.preventDefault()
+
+            // Only allow primary touch points (first finger)
+            if (e.isPrimary === false) return
+
+            // For space key, we check the code.
+            if (e.type === 'keydown' && e.code !== 'Space') return
+
+            const now = Date.now()
+            if (now - lastActionTime < 450) return // Increased cooldown to 450ms
+            lastActionTime = now
+
+            const { gameStarted, gameOver, startGame, placeBlock } = useStore.getState()
+            if (!gameStarted) startGame()
+            else if (!gameOver) placeBlock()
         }
 
-        window.addEventListener('keydown', handleKeyDown)
-        return () => window.removeEventListener('keydown', handleKeyDown)
+        window.addEventListener('keydown', handleAction)
+        window.addEventListener('pointerdown', handleAction)
+
+        return () => {
+            window.removeEventListener('keydown', handleAction)
+            window.removeEventListener('pointerdown', handleAction)
+        }
     }, [])
 
     return (
