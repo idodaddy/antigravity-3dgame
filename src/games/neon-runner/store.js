@@ -10,11 +10,14 @@ export const useStore = create((set) => ({
     playerX: 0, // Actual X position
     level: 1,
     lives: 3,
+    rank: null, // User rank on leaderboard
 
     setPlayerLane: (lane) => set({ playerLane: lane }),
     setPlayerY: (y) => set({ playerY: y }),
     setPlayerX: (x) => set({ playerX: x }),
-    startGame: () => set({ gameStarted: true, gameOver: false, score: 0, speed: 15, playerLane: 0, playerY: 0.3, level: 1, lives: 3 }),
+    setRank: (rank) => set({ rank }),
+
+    startGame: () => set({ gameStarted: true, gameOver: false, score: 0, lives: 3, level: 1, speed: 15, playerLane: 0, playerY: 0.3, rank: null }),
     endGame: () => set({ gameOver: true, gameStarted: false }),
     hit: () => set((state) => {
         const newLives = state.lives - 1
@@ -23,12 +26,15 @@ export const useStore = create((set) => ({
         }
         return { lives: newLives }
     }),
-    collectMineral: () => set((state) => {
-        const newScore = state.score + 1
-        const newLevel = Math.floor(newScore / 10) + 1 // Level up every 10 minerals
-        // Speed increases with level
-        const newSpeed = 15 + (newLevel - 1) * 2
-        return { score: newScore, level: newLevel, speed: newSpeed }
+    collectMineral: (points = 1) => set((state) => {
+        const newScore = state.score + points
+        return { score: newScore }
     }),
-    reset: () => set({ score: 0, gameOver: false, gameStarted: false, speed: 15, playerLane: 0, playerY: 0.3, level: 1, lives: 3 }),
+    increaseLevel: () => set((state) => {
+        const newLevel = state.level + 1
+        const newSpeed = 15 + (newLevel - 1) * 2
+        return { level: newLevel, speed: newSpeed }
+    }),
+    restart: () => set({ gameStarted: true, gameOver: false, score: 0, lives: 3, level: 1, speed: 15, playerLane: 0, playerY: 0.3, rank: null }),
+    reset: () => set({ score: 0, gameOver: false, gameStarted: false, speed: 15, playerLane: 0, playerY: 0.3, level: 1, lives: 3, rank: null }),
 }))

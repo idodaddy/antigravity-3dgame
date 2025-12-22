@@ -23,11 +23,8 @@ export default function Layout({ children }) {
                         </span>
                     </Link>
 
-                    <nav className="hidden md:flex items-center gap-4">
-                        <Button to="/" variant="ghost" className="text-sm">Games</Button>
-                        <Button variant="ghost" className="text-sm opacity-50 cursor-not-allowed">Leaderboards</Button>
-                        <Button variant="ghost" className="text-sm opacity-50 cursor-not-allowed">Community</Button>
-                        <Button variant="secondary" className="px-6 py-2 text-sm rounded-full">Sign In</Button>
+                    <nav className="flex items-center gap-4">
+                        <Button to="/leaderboard" variant="ghost" className="text-sm hover:text-cyan-400 transition-colors">Leaderboards</Button>
                     </nav>
                 </div>
             </header>

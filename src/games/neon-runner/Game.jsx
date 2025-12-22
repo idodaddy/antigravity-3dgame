@@ -8,10 +8,14 @@ import MobileControls from './components/MobileControls'
 import { useStore } from './store'
 import { startBGM, stopBGM } from './audio'
 
+import { submitScore } from '../../services/leaderboardService'
+import { getUserID, getUserNickname } from '../../utils/userStore'
+
 function GameLogic() {
 
     const gameStarted = useStore(state => state.gameStarted)
     const gameOver = useStore(state => state.gameOver)
+    const score = useStore(state => state.score)
 
     const reset = useStore(state => state.reset)
 
@@ -26,17 +30,59 @@ function GameLogic() {
         }
     }, [])
 
+    const increaseLevel = useStore(state => state.increaseLevel)
+
     useEffect(() => {
+        let interval;
         if (gameStarted && !gameOver) {
             startBGM()
+            interval = setInterval(() => {
+                increaseLevel()
+            }, 30000)
         } else {
             stopBGM()
         }
-    }, [gameStarted, gameOver])
+
+        return () => {
+            if (interval) clearInterval(interval)
+        }
+    }, [gameStarted, gameOver, increaseLevel])
+
+    // State for rank
+    const [rank, setRank] = React.useState(null);
+
+    // Submit score on Game Over
+    useEffect(() => {
+        if (gameOver) {
+            const uuid = getUserID();
+            const nickname = getUserNickname();
+            submitScore('neon-runner', uuid, nickname, score).then(r => setRank(r));
+        } else {
+            setRank(null);
+        }
+    }, [gameOver, score])
 
     useFrame((state, delta) => {
         // Score is now handled by collecting minerals
     })
+
+    // We can't easily pass rank to HUD via store without adding it to store.
+    // However, HUD is a sibling. Let's use the store to hold 'lastRank' if we want clean architecture,
+    // or just assume HUD can read it?
+    // Wait, HUD calls GameEndOverlay. 
+    // Let's add 'rank' to the Zustand store for simplicity of passing data.
+
+    // Ideally we update the store with the rank.
+    // Let's modify the store in a separate step?
+    // Actually, HUD reads from store. Let's create a temp store mechanism or just pass it if possible.
+    // Since HUD is a component inside Game.jsx, we can pass props if HUD was a child of GameLogic (it isn't).
+
+    // Quick fix: Add setRank to store.
+    const setGameRank = useStore(state => state.setRank)
+    useEffect(() => {
+        if (rank) setGameRank(rank)
+    }, [rank])
+
     return null
 }
 

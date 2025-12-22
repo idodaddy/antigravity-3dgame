@@ -1,5 +1,5 @@
 export const SEGMENT_LENGTH = 20
-export const OBSTACLE_CHANCE = 0.4
+export const OBSTACLE_CHANCE = 0.7
 export const JUMP_DURATION = 0.6
 export const JUMP_HEIGHT = 2.5
 
@@ -13,8 +13,8 @@ export function createSegmentContent(offset, speed) {
     while (z < 18) { // Leave buffer at end
         const roll = Math.random()
 
-        // 1. OBSTACLE (15% chance)
-        if (roll < 0.15) {
+        // 1. OBSTACLE (40% chance)
+        if (roll < 0.40) {
             // Check bounds: Obstacle is single point.
             if (z + 2 >= 20) { // Needs space for itself + buffer
                 z = 20 // Finish
@@ -24,13 +24,13 @@ export function createSegmentContent(offset, speed) {
             obstacles.push({ position: [lane, 0.4, z + 0.5] })
 
             // Gap based on speed: Ensure ~0.5s reaction/recovery time
-            const gap = Math.max(5, speed * 0.5)
+            const gap = Math.max(5, speed * 0.4)
             z += gap
         }
         // 2. JUMP ARC (Air Minerals) (30% chance)
-        else if (roll < 0.45) {
+        else if (roll < 0.70) {
             const jumpDist = (speed * JUMP_DURATION) * 1.1
-            const count = 6
+            const count = 5
             const spacing = jumpDist / count
 
             // BOUNDARY CHECK
@@ -61,7 +61,9 @@ export function createSegmentContent(offset, speed) {
                 const y = Math.sin(progress * Math.PI) * JUMP_HEIGHT + 0.5
                 const x = ([-3, 0, 3][laneIdx]) + (([-3, 0, 3][endLaneIdx]) - ([-3, 0, 3][laneIdx])) * progress
 
-                minerals.push({ position: [x, y, z + i * spacing], id: Math.random() })
+                // Middle item (index 2) is a Star
+                const type = (i === 2) ? 'star' : 'min'
+                minerals.push({ position: [x, y, z + i * spacing], id: Math.random(), type })
             }
 
             // STRICT GAP LOGIC:
@@ -71,8 +73,8 @@ export function createSegmentContent(offset, speed) {
             const gap = Math.max(8, speed * 0.8) // Strong buffer after jump (0.8s)
             z = lastItemZ + gap
         }
-        // 3. GROUND STREAK (35% chance)
-        else if (roll < 0.80) {
+        // 3. GROUND STREAK (25% chance)
+        else if (roll < 0.95) {
             const count = 5 + Math.floor(Math.random() * 3)
             const spacing = 1.8
 
@@ -87,7 +89,7 @@ export function createSegmentContent(offset, speed) {
             const lane = [-3, 0, 3][laneIdx]
 
             for (let i = 0; i < count; i++) {
-                minerals.push({ position: [lane, 0.5, z + i * spacing], id: Math.random() })
+                minerals.push({ position: [lane, 0.5, z + i * spacing], id: Math.random(), type: 'min' })
             }
 
             const lastItemZ = finishZ

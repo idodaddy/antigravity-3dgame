@@ -1,6 +1,7 @@
 import React from 'react'
 import { useStore } from '../store'
 import GameEndOverlay from '../../../components/GameEndOverlay'
+import GameStartOverlay from '../../../components/GameStartOverlay'
 
 export default function HUD() {
     const score = useStore(state => state.score)
@@ -11,6 +12,18 @@ export default function HUD() {
     const gameStarted = useStore(state => state.gameStarted)
     const startGame = useStore(state => state.startGame)
     const reset = useStore(state => state.reset)
+    const restart = useStore(state => state.restart)
+
+    const rank = useStore(state => state.rank)
+    const [showLevelUp, setShowLevelUp] = React.useState(false)
+
+    React.useEffect(() => {
+        if (level > 1) {
+            setShowLevelUp(true)
+            const timer = setTimeout(() => setShowLevelUp(false), 2000)
+            return () => clearTimeout(timer)
+        }
+    }, [level])
 
     React.useEffect(() => {
         const handleKeyDown = (e) => {
@@ -18,13 +31,13 @@ export default function HUD() {
                 if (!gameStarted && !gameOver) {
                     startGame()
                 } else if (gameOver) {
-                    reset()
+                    restart()
                 }
             }
         }
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [gameStarted, gameOver, startGame, reset])
+    }, [gameStarted, gameOver, startGame, restart])
 
     return (
         <div style={{
@@ -50,28 +63,34 @@ export default function HUD() {
             </div>
 
             {!gameStarted && !gameOver && (
-                <div style={{ pointerEvents: 'auto', textAlign: 'center' }}>
-                    <h1 style={{ fontSize: '64px', marginBottom: '20px', color: '#00ffcc' }}>NEON RUNNER</h1>
-                    <button
-                        onClick={startGame}
-                        style={{
-                            padding: '15px 40px',
-                            fontSize: '24px',
-                            background: '#ff00cc',
-                            border: 'none',
-                            color: 'white',
-                            cursor: 'pointer',
-                            borderRadius: '5px',
-                            boxShadow: '0 0 20px #ff00cc'
-                        }}
-                    >
-                        START GAME
-                    </button>
-                    <p style={{ marginTop: '20px' }}>Press Space, Click, or Tap to Start</p>
+                <div style={{ pointerEvents: 'auto' }}>
+                    <GameStartOverlay
+                        title="NEON RUNNER"
+                        instructions="Swipe or Click left/right to move. Avoid obstacles and collect minerals!"
+                        onStart={startGame}
+                    />
                 </div>
             )}
 
-            {gameOver && <GameEndOverlay score={Math.floor(score)} onRestart={reset} />}
+            {/* Level Up Indicator */}
+            {showLevelUp && (
+                <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    fontSize: '64px',
+                    color: '#00ffcc',
+                    fontWeight: 'bold',
+                    textShadow: '0 0 20px #00ffcc',
+                    animation: 'pulse 0.5s infinite alternate',
+                    zIndex: 20
+                }}>
+                    LEVEL UP!
+                </div>
+            )}
+
+            {gameOver && <GameEndOverlay score={Math.floor(score)} rank={rank} onRestart={restart} />}
         </div>
     )
 }

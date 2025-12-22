@@ -1,11 +1,16 @@
 import React from 'react'
 import { useStore } from '../store'
 import GameEndOverlay from '../../../components/GameEndOverlay'
+import GameStartOverlay from '../../../components/GameStartOverlay'
 
 export default function HUD() {
     const score = useStore(state => state.score)
     const gameOver = useStore(state => state.gameOver)
+    const gameStarted = useStore(state => state.gameStarted)
     const reset = useStore(state => state.reset)
+    const startGame = useStore(state => state.startGame)
+
+    const rank = useStore(state => state.rank)
 
     return (
         <div className="absolute inset-0 pointer-events-none">
@@ -18,10 +23,21 @@ export default function HUD() {
             </div>
 
             {/* Game Over */}
-            {gameOver && <GameEndOverlay score={score} onRestart={reset} />}
+            {gameOver && <GameEndOverlay score={score} rank={rank} onRestart={startGame} />}
+
+            {/* Start Screen */}
+            {!gameStarted && !gameOver && (
+                <div className="absolute inset-0 z-50 pointer-events-auto">
+                    <GameStartOverlay
+                        title="CYBER STACK"
+                        instructions="Tap or Press Space to stack blocks. \n Align them perfectly to keep the tower wide!"
+                        onStart={useStore.getState().startGame}
+                    />
+                </div>
+            )}
 
             {/* Controls Hint */}
-            {!gameOver && (
+            {gameStarted && !gameOver && (
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/50 text-sm w-full text-center px-4">
                     Press <span className="text-white font-bold">SPACE</span> or <span className="text-white font-bold">TAP</span> to Place Block
                 </div>

@@ -6,6 +6,8 @@ import Stack from './components/Stack'
 import ActiveBlock from './components/ActiveBlock'
 import HUD from './components/HUD'
 import Debris from './components/Debris'
+import { submitScore } from '../../services/leaderboardService'
+import { getUserID, getUserNickname } from '../../utils/userStore'
 
 function CameraController() {
     const { camera } = useThree()
@@ -26,7 +28,8 @@ function GameContent() {
     const gameOver = useStore(state => state.gameOver)
 
     useEffect(() => {
-        startGame()
+        // Remove auto-start
+        // startGame()
 
         let lastActionTime = 0
 
@@ -58,6 +61,19 @@ function GameContent() {
             window.removeEventListener('pointerdown', handleAction)
         }
     }, [])
+
+    // Submit Score on Game Ove
+    const score = useStore(state => state.score)
+    const setGameRank = useStore(state => state.setRank)
+    useEffect(() => {
+        if (gameOver) {
+            const uuid = getUserID();
+            const nickname = getUserNickname();
+            submitScore('cyber-stack', uuid, nickname, score).then(r => setGameRank(r));
+        } else {
+            setGameRank(null);
+        }
+    }, [gameOver, score])
 
     return (
         <>

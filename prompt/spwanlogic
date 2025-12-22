@@ -4,3 +4,24 @@
 하나씩 지그재그로 생성되는 미네랄은 없어
 미네랄은 한줄에 하나씩만 새성됨
 player가 잘만하면 모든 미네랄을 다 수집할 수 있게, 동시에 여러군데 있으면 불가능하잔아
+
+2512122--------------------------
+
+Purpose: more friendly navigation on mobile
+Todo
+- remove big banner on top
+- show top 4 treding game button at the firstpage
+- out ad sense banner place under the buttons 
+
+
+Purpose2: make leaderboard without login
+- make leaderboard page showing top 100 users for eachgame(good navigation required)
+- remove all button on top excep Leaderboards
+- system store uuid on localStrage
+- user can change nickname after finish game
+- nick name cannot be duplicate
+- nickname uuid are saved on firebase stroage
+- each game stores leaderboard (gameid, uuid, score)
+- one user change nickname linked to uuid leader board shows changed nikcname
+
+

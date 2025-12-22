@@ -17,10 +17,11 @@ function Obstacle({ position }) {
     )
 }
 
-function Mineral({ position }) {
+function Mineral({ position, type }) {
     const mesh = useRef()
     const isHigh = position[1] > 1.0
-    const color = "#00ffff" // Uniform Cyan
+    const isStar = type === 'star'
+    const color = isStar ? "#ffff00" : "#00ffff" // Yellow for star, Cyan for min
 
     useFrame((state, delta) => {
         if (mesh.current) {
@@ -38,7 +39,7 @@ function Mineral({ position }) {
         <group position={[position[0], 0, position[2]]}>
             {/* The Mineral Itself */}
             <mesh ref={mesh} position={[0, position[1], 0]} castShadow>
-                <octahedronGeometry args={[0.3, 0]} />
+                {isStar ? <icosahedronGeometry args={[0.4, 0]} /> : <octahedronGeometry args={[0.3, 0]} />}
                 <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.8} />
             </mesh>
 
@@ -71,7 +72,7 @@ function Segment({ position, obstacles, minerals }) {
 
             {/* Minerals */}
             {minerals && minerals.map((min, i) => (
-                <Mineral key={`min-${i}`} position={min.position} />
+                <Mineral key={`min-${i}`} position={min.position} type={min.type} />
             ))}
         </group>
     )
@@ -91,21 +92,23 @@ export default function Track() {
 
     // Initial segments function to be reused
     const nextSpawnOffset = useRef(0)
+    const [startTime, setStartTime] = useState(0)
 
     const createInitialSegments = () => {
         const initial = []
-        nextSpawnOffset.current = 0 // Reset
+        nextSpawnOffset.current = 0
         // Use current speed or fallback to BASE_SPEED (10) if store not yet ready
-        // Note: speed variable here comes from useStore hook at top of component.
-        // During first render, it should be the initial state (0 or 10). 
-        // If initial state is 0 (game not started), we should use BASE_SPEED for generation math.
         const currentSpeed = speed > 0 ? speed : BASE_SPEED
 
+        // Create 10 segments total
         for (let i = 0; i < 10; i++) {
-            if (i < 1) {
-                initial.push({ z: 0, obstacles: [], minerals: [] })
+            // First 3 segments (0 to -60) are empty for safe start (approx 4 seconds at 15 speed)
+            if (i < 3) {
+                initial.push({ z: -i * SEGMENT_LENGTH, obstacles: [], minerals: [] })
                 continue
             }
+
+            // Generate content for the rest immediately
             const { obstacles, minerals, nextOffset } = createSegmentContent(nextSpawnOffset.current, currentSpeed)
             nextSpawnOffset.current = nextOffset
 
@@ -121,9 +124,11 @@ export default function Track() {
     // Initial segments state
     const [segments, setSegments] = useState(createInitialSegments)
 
-    // Reset segments when game stops (reset)
+    // Reset segments when game stops (reset) or starts
     React.useEffect(() => {
-        if (!gameStarted) {
+        if (gameStarted) {
+            setStartTime(Date.now())
+        } else {
             setSegments(createInitialSegments())
         }
     }, [gameStarted])
@@ -145,11 +150,19 @@ export default function Track() {
                 next.shift()
                 const lastZ = next[next.length - 1].z
 
+                let obstacles = []
+                let minerals = []
+
                 // GENERATION SYNC
-                // Fallback to BASE_SPEED if speed is invalid/0 to prevent infinite NaN loops
-                const currentSpeed = (speed && speed > 0) ? speed : BASE_SPEED
-                const { obstacles, minerals, nextOffset } = createSegmentContent(nextSpawnOffset.current, currentSpeed)
-                nextSpawnOffset.current = nextOffset
+                // Delay spawning by 3.5 seconds
+                if (Date.now() - startTime > 3500) {
+                    // Fallback to BASE_SPEED if speed is invalid/0 to prevent infinite NaN loops
+                    const currentSpeed = (speed && speed > 0) ? speed : BASE_SPEED
+                    const content = createSegmentContent(nextSpawnOffset.current, currentSpeed)
+                    obstacles = content.obstacles
+                    minerals = content.minerals
+                    nextSpawnOffset.current = content.nextOffset
+                }
 
                 next.push({
                     z: lastZ - SEGMENT_LENGTH,
@@ -212,7 +225,8 @@ export default function Track() {
                         // Collection radius ~0.8
                         if (distSq < 0.8 * 0.8) {
                             // Collected!
-                            collectMineral()
+                            const points = min.type === 'star' ? 5 : 1
+                            collectMineral(points)
                             playCollectSound()
                             collected = true
                             return // Don't add to remaining
