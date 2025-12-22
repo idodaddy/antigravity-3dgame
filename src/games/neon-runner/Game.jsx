@@ -1,6 +1,7 @@
 import React, { Suspense, useEffect } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { PerspectiveCamera, Environment, Stars } from '@react-three/drei'
+import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import Player from './components/Player'
 import Track from './components/Track'
 import HUD from './components/HUD'
@@ -130,6 +131,10 @@ export default function Game() {
                     <Track />
                 </Suspense>
                 <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+
+                {/* <EffectComposer>
+                    <Bloom luminanceThreshold={0.5} luminanceSmoothing={0.9} height={300} />
+                </EffectComposer> */}
 
                 <GameLogic />
                 <ResponsiveCamera />

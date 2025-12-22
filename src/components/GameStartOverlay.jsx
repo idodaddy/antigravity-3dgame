@@ -27,7 +27,7 @@ export default function GameStartOverlay({ title, instructions, onStart }) {
                         <Button onClick={onStart} variant="primary" className="py-4 text-xl shadow-[0_0_30px_rgba(6,182,212,0.4)]">
                             Start Game
                         </Button>
-                        <Button to="/" variant="outline" className="flex items-center justify-center gap-2">
+                        <Button to="/" variant="outline" className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
                             <span className="text-lg">🏠</span> Home
                         </Button>
                     </div>

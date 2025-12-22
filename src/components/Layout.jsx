@@ -41,9 +41,9 @@ export default function Layout({ children }) {
                         &copy; 2025 PlayMini. Crafted for gamers.
                     </div>
                     <div className="flex gap-2">
-                        <Button variant="ghost" className="text-xs px-4 py-2">Privacy</Button>
-                        <Button variant="ghost" className="text-xs px-4 py-2">Terms</Button>
-                        <Button variant="ghost" className="text-xs px-4 py-2">Contact</Button>
+                        <a href="mailto:briankim.cfa@gmail.com">
+                            <Button variant="ghost" className="text-xs px-4 py-2">Contact</Button>
+                        </a>
                     </div>
                 </div>
             </footer>

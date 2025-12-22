@@ -23,6 +23,14 @@ export function createSegmentContent(offset, speed) {
             const lane = [-3, 0, 3][Math.floor(Math.random() * 3)]
             obstacles.push({ position: [lane, 0.4, z + 0.5] })
 
+            // HIGH CHANCE to spawn a mineral in a DIFFERENT lane (Simultaneous content)
+            if (Math.random() < 0.7) {
+                // Pick a lane that is NOT the obstacle lane
+                const otherLanes = [-3, 0, 3].filter(l => l !== lane)
+                const minLane = otherLanes[Math.floor(Math.random() * otherLanes.length)]
+                minerals.push({ position: [minLane, 0.5, z + 0.5], id: Math.random(), type: 'min' })
+            }
+
             // Gap based on speed: Ensure ~0.5s reaction/recovery time
             const gap = Math.max(5, speed * 0.4)
             z += gap
@@ -109,23 +117,42 @@ export function createSegmentContent(offset, speed) {
     ].sort((a, b) => a.position[2] - b.position[2])
 
     // Filter out items that are too close to predecessor
+    // Filter out items that are too close to predecessor
     const finalObstacles = []
     const finalMinerals = []
 
-    let lastZ = -100
     const MIN_Z_DIST = 1.0 // Absolute minimum distance between ANY two items (Z-axis)
 
+    // BETTER APPROACH: Eliminate this single-stream loop.
+    // Use a simple collision check against result arrays.
+
     allItems.forEach(item => {
-        const thisZ = item.position[2]
-        if (thisZ - lastZ >= MIN_Z_DIST) {
-            // Safe to keep
+        const p = item.position
+        let collision = false
+
+        // Check against kept obstacles
+        for (const other of finalObstacles) {
+            const dz = Math.abs(p[2] - other.position[2])
+            const dx = Math.abs(p[0] - other.position[0])
+            if (dz < MIN_Z_DIST && dx < 1.0) { // Same Z (approx) AND Same Lane (approx)
+                collision = true; break;
+            }
+        }
+
+        if (!collision) {
+            // Check against kept minerals (optional: do we forbid mineral-mineral overlap? Yes)
+            for (const other of finalMinerals) {
+                const dz = Math.abs(p[2] - other.position[2])
+                const dx = Math.abs(p[0] - other.position[0])
+                if (dz < MIN_Z_DIST && dx < 1.0) {
+                    collision = true; break;
+                }
+            }
+        }
+
+        if (!collision) {
             if (item.type === 'obs') finalObstacles.push(item.ref)
             else finalMinerals.push(item.ref)
-            lastZ = thisZ
-        } else {
-            // Too close! Skip/Prune.
-            // This ensures "One item per plane" is strictly enforced.
-            // (Note: This might break streaks slightly, but strictly obeys the 'no overlap' rule)
         }
     })
 

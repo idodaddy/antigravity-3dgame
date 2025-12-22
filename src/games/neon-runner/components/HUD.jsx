@@ -55,11 +55,16 @@ export default function HUD() {
             fontFamily: 'sans-serif',
             textShadow: '0 0 10px #ff00cc'
         }}>
-            <div style={{ position: 'absolute', top: 20, left: 20, fontSize: '24px', textAlign: 'left' }}>
-                <div>Score: {Math.floor(score)}</div>
-                <div style={{ fontSize: '18px', color: '#00ffcc' }}>Level: {level}</div>
-                <div style={{ fontSize: '14px', color: '#aaa' }}>Speed: {speed.toFixed(1)}</div>
-                <div style={{ fontSize: '24px', color: '#ff0055', marginTop: '10px' }}>Lives: {'❤️'.repeat(lives)}</div>
+            {/* Responsive Container for HUD Stats */}
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+                <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', height: '100%', position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: 20, left: 20, fontSize: '24px', textAlign: 'left' }}>
+                        <div>Score: {Math.floor(score)}</div>
+                        <div style={{ fontSize: '18px', color: '#00ffcc' }}>Level: {level}</div>
+                        <div style={{ fontSize: '14px', color: '#aaa' }}>Speed: {speed.toFixed(1)}</div>
+                        <div style={{ fontSize: '24px', color: '#ff0055', marginTop: '10px' }}>Lives: {'❤️'.repeat(lives)}</div>
+                    </div>
+                </div>
             </div>
 
             {!gameStarted && !gameOver && (

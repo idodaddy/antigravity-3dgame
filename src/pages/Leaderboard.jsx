@@ -60,18 +60,24 @@ export default function Leaderboard() {
                     <div className="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/10">
                         <span className="text-gray-400 text-sm pl-2">Player:</span>
                         {isEditing ? (
-                            <form onSubmit={handleNicknameSubmit} className="flex gap-2">
+                            <form onSubmit={handleNicknameSubmit} className="flex items-center gap-3">
                                 <input
                                     type="text"
                                     value={nickname}
                                     onChange={(e) => setNickname(e.target.value)}
-                                    className="bg-black/50 border border-cyan-500/50 rounded px-2 py-1 text-white text-sm focus:outline-none focus:border-cyan-400"
+                                    className="bg-black/50 border border-cyan-500/50 rounded px-3 py-1.5 text-white text-sm focus:outline-none focus:border-cyan-400 h-9"
                                     placeholder="Enter Nickname"
                                     autoFocus
                                     maxLength={15}
                                 />
-                                <button type="submit" className="text-cyan-400 hover:text-cyan-300 text-xs uppercase font-bold">Save</button>
-                                <button type="button" onClick={() => setIsEditing(false)} className="text-red-400 hover:text-red-300 text-xs uppercase font-bold">Cancel</button>
+                                <div className="flex items-center gap-2">
+                                    <button type="submit" className="h-9 px-3 flex items-center justify-center text-cyan-400 hover:text-cyan-300 text-xs uppercase font-black tracking-wider border border-transparent hover:border-cyan-500/30 rounded transition-all">
+                                        Save
+                                    </button>
+                                    <button type="button" onClick={() => setIsEditing(false)} className="h-9 px-3 flex items-center justify-center text-red-500 hover:text-red-400 text-xs uppercase font-black tracking-wider border border-transparent hover:border-red-500/30 rounded transition-all">
+                                        Cancel
+                                    </button>
+                                </div>
                             </form>
                         ) : (
                             <div className="flex items-center gap-2">
@@ -99,8 +105,8 @@ export default function Leaderboard() {
                             key={game.id}
                             onClick={() => setActiveGame(game.id)}
                             className={`px-6 py-3 text-sm font-bold tracking-wider uppercase transition-all border-b-2 ${activeGame === game.id
-                                    ? 'border-cyan-500 text-cyan-400 bg-cyan-500/5'
-                                    : 'border-transparent text-gray-500 hover:text-white hover:bg-white/5'
+                                ? 'border-cyan-500 text-cyan-400 bg-cyan-500/5'
+                                : 'border-transparent text-gray-500 hover:text-white hover:bg-white/5'
                                 }`}
                         >
                             {game.name}

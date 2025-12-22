@@ -12,6 +12,11 @@ export default function MobileControls() {
         }
 
         const handleTouchEnd = (e) => {
+            // Ignore if touching an interactive element
+            if (e.target.closest('button, a, input, [role="button"]')) {
+                return
+            }
+
             const touchEndX = e.changedTouches[0].screenX
             const touchEndY = e.changedTouches[0].screenY
 

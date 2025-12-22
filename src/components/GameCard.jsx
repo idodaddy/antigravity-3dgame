@@ -31,8 +31,6 @@ export default function GameCard({ title, id, color, link, image, compact = fals
                     {!compact && (
                         <div className="flex items-center gap-2">
                             <span className="text-cyan-400 text-xs font-bold uppercase tracking-wider">Action</span>
-                            <span className="w-1 h-1 rounded-full bg-gray-500" />
-                            <span className="text-gray-400 text-xs">Infinite Runner</span>
                         </div>
                     )}
                 </div>
