@@ -26,47 +26,68 @@ function TutorialOverlay() {
     if (!visible || !gameStarted) return null
 
     return (
-        <div className="absolute inset-0 z-50 flex items-end justify-center pointer-events-none pb-24">
-            <div className="bg-black/80 backdrop-blur-md border border-white/10 px-10 py-6 rounded-3xl flex flex-row items-center gap-8 animate-in fade-in slide-in-from-bottom-10 duration-500 shadow-2xl">
+        <div className="absolute inset-0 z-50 flex items-end justify-center pointer-events-none pb-8">
+            <div className="bg-black/80 backdrop-blur-md border border-white/10 px-8 py-4 rounded-3xl flex flex-row items-center gap-8 animate-in fade-in slide-in-from-bottom-10 duration-500 shadow-2xl">
 
-                {/* Swipe Instruction with Animation */}
-                <div className="flex flex-col items-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 relative overflow-hidden">
-                        {/* Hand Icon Animating */}
-                        <div className="animate-[swipe_1.5s_ease-in-out_infinite]">
-                            <svg className="w-8 h-8 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
-                            </svg>
-                        </div>
-                        {/* Arrows indicating direction */}
-                        <div className="absolute inset-0 flex items-center justify-between px-1 opacity-30">
-                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                {/* Horizontal Swipe Instruction */}
+                <div className="flex flex-col items-center gap-2">
+                    <div className="relative w-14 h-14 flex items-center justify-center">
+                        <div className="bg-white/10 rounded-xl w-14 h-14 flex items-center justify-center border border-white/20 z-10">
+                            <div className="animate-[swipeHorizontal_1.5s_ease-in-out_infinite]">
+                                <svg className="w-6 h-6 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                                </svg>
+                            </div>
                         </div>
                     </div>
-                    <span className="text-xs font-bold text-white/80 uppercase tracking-widest">Swipe</span>
+                    <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Left / Right</span>
                 </div>
 
-                {/* Divider */}
-                <div className="w-px h-12 bg-white/20" />
+                {/* Vertical Swipe Instruction */}
+                <div className="flex flex-col items-center gap-2">
+                    <div className="relative w-14 h-14 flex items-center justify-center">
+                        <div className="absolute -top-4.5 text-[10px] font-bold text-yellow-400 uppercase tracking-wider animate-pulse">Jump</div>
+                        <div className="absolute -bottom-4.5 text-[10px] font-bold text-yellow-400 uppercase tracking-wider animate-pulse">Slide</div>
 
-                {/* Tap Instruction */}
-                <div className="flex flex-col items-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 relative">
-                        <div className="w-4 h-4 rounded-full bg-yellow-400 animate-ping absolute" />
-                        <div className="w-4 h-4 rounded-full bg-yellow-400 relative z-10" />
+                        <div className="bg-white/10 rounded-xl w-14 h-14 flex items-center justify-center border border-white/20 z-10">
+                            <div className="animate-[swipeVertical_1.5s_ease-in-out_infinite]">
+                                <svg className="w-6 h-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
-                    <span className="text-xs font-bold text-white/80 uppercase tracking-widest">Jump</span>
+                </div>
+
+                {/* Vertical Divider */}
+                <div className="w-px h-10 bg-white/10" />
+
+                {/* Keyboard Instruction */}
+                <div className="flex flex-col items-center gap-2">
+                    <div className="flex gap-0.5 opacity-80 scale-75 items-end">
+                        {/* Mock Arrow Keys */}
+                        <div className="w-6 h-6 border border-white/40 rounded flex items-center justify-center"><svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg></div>
+                        <div className="flex flex-col gap-0.5">
+                            <div className="w-6 h-6 border border-white/40 rounded flex items-center justify-center"><svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg></div>
+                            <div className="w-6 h-6 border border-white/40 rounded flex items-center justify-center"><svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></div>
+                        </div>
+                        <div className="w-6 h-6 border border-white/40 rounded flex items-center justify-center"><svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg></div>
+                    </div>
+                    <span className="text-[9px] font-bold text-white/50 uppercase tracking-widest">Keys</span>
                 </div>
 
             </div>
 
-            {/* Inject custom keyframes for swipe */}
             <style>{`
-                @keyframes swipe {
-                    0%, 100% { transform: translateX(0) rotate(0deg); }
-                    25% { transform: translateX(-12px) rotate(-10deg); }
-                    75% { transform: translateX(12px) rotate(10deg); }
+                @keyframes swipeHorizontal {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-8px) rotate(-5deg); }
+                    75% { transform: translateX(8px) rotate(5deg); }
+                }
+                @keyframes swipeVertical {
+                    0%, 100% { transform: translateY(0); }
+                    25% { transform: translateY(-8px); }
+                    75% { transform: translateY(8px); }
                 }
             `}</style>
         </div>
@@ -100,7 +121,7 @@ function GameLogic() {
             startBGM()
             interval = setInterval(() => {
                 increaseLevel()
-            }, 30000)
+            }, 20000)
         } else {
             stopBGM()
         }
@@ -167,7 +188,7 @@ function ResponsiveCamera() {
 
 export default function Game() {
     return (
-        <div className="w-full h-screen bg-[#050505]">
+        <div className="w-full h-screen bg-[#050505]" style={{ touchAction: 'none' }}>
             <Canvas shadows>
                 <PerspectiveCamera makeDefault position={[0, 6, 9]} rotation={[-0.4, 0, 0]} fov={60} />
                 <fog attach="fog" args={['#000', 10, 90]} />

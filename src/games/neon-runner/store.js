@@ -28,13 +28,16 @@ export const useStore = create((set) => ({
     }),
     collectMineral: (points = 1) => set((state) => {
         const newScore = state.score + points
-        return { score: newScore }
+        return {
+            score: newScore,
+            lastScoreEvent: { id: Math.random(), points }
+        }
     }),
     increaseLevel: () => set((state) => {
         const newLevel = state.level + 1
         const newSpeed = 15 + (newLevel - 1) * 2
         return { level: newLevel, speed: newSpeed }
     }),
-    restart: () => set({ gameStarted: true, gameOver: false, score: 0, lives: 3, level: 1, speed: 15, playerLane: 0, playerY: 0.3, rank: null }),
-    reset: () => set({ score: 0, gameOver: false, gameStarted: false, speed: 15, playerLane: 0, playerY: 0.3, level: 1, lives: 3, rank: null }),
+    restart: () => set({ gameStarted: true, gameOver: false, score: 0, lives: 3, level: 1, speed: 15, playerLane: 0, playerY: 0.3, rank: null, lastScoreEvent: null }),
+    reset: () => set({ score: 0, gameOver: false, gameStarted: false, speed: 15, playerLane: 0, playerY: 0.3, level: 1, lives: 3, rank: null, lastScoreEvent: null })
 }))

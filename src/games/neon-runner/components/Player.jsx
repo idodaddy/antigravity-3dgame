@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Vector3, Object3D } from 'three'
 import * as THREE from 'three'
+import { Html } from '@react-three/drei'
 import { useStore } from '../store'
 import { playJumpSound, playCrashSound } from '../audio'
 import RobotCharacter from './RobotCharacter'
@@ -158,6 +159,48 @@ function ExplosionSystem({ playerX, playerY, trigger }) {
 
 // ------------------------------------
 
+function FloatingScore({ points, onComplete }) {
+    const [visible, setVisible] = useState(true)
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setVisible(false)
+            onComplete()
+        }, 800)
+        return () => clearTimeout(timer)
+    }, [])
+
+    if (!visible) return null
+
+    return (
+        <Html position={[0, 2.5, 0]} center style={{ pointerEvents: 'none', transform: 'translate3d(0,0,0)', zIndex: 100 }}>
+            <div style={{
+                color: points >= 5 ? '#ffff00' : '#00ffcc',
+                fontWeight: '900',
+                fontFamily: 'Impact, sans-serif',
+                fontStyle: 'italic',
+                fontSize: points >= 5 ? '64px' : '48px',
+                whiteSpace: 'nowrap',
+                textShadow: points >= 5 ? '0 0 30px #ff9900, 3px 3px 0 #000' : '0 0 15px #00ffff, 2px 2px 0 #000',
+                animation: 'floatUp 0.8s forwards ease-out',
+                userSelect: 'none'
+            }}>
+                +{points}
+            </div>
+            <style>{`
+                @keyframes floatUp {
+                    0% { transform: translateY(0) scale(0.5); opacity: 0; }
+                    20% { transform: translateY(-20px) scale(1.5); opacity: 1; }
+                    80% { transform: translateY(-60px) scale(2.0); opacity: 1; }
+                    100% { transform: translateY(-100px) scale(3.0); opacity: 0; }
+                }
+             `}</style>
+        </Html>
+    )
+}
+
+
+
 export default function Player() {
     const mesh = useRef()
     const [lane, setLane] = useState(0) // -1, 0, 1
@@ -165,18 +208,26 @@ export default function Player() {
     const setPlayerY = useStore(state => state.setPlayerY)
     const setPlayerX = useStore(state => state.setPlayerX)
     const [jumping, setJumping] = useState(false)
+    const [sliding, setSliding] = useState(false)
     const [jumpStartTime, setJumpStartTime] = useState(0)
+    const [slideStartTime, setSlideStartTime] = useState(0)
     const lives = useStore(state => state.lives)
     const [lastLives, setLastLives] = useState(lives)
     const [hitTrigger, setHitTrigger] = useState(0)
     const [isBlinking, setIsBlinking] = useState(false)
     const [flashColorState, setFlashColorState] = useState(false) // false = Red, true = White
+    const [shocked, setShocked] = useState(false)
 
     useEffect(() => {
         if (lives < lastLives) {
             // Hit detected
             setHitTrigger(t => t + 1)
-            playCrashSound()
+            setHitTrigger(t => t + 1)
+            playCrashSound() // Randomly plays one of 3 variants
+
+            // Electric Shock Effect
+            setShocked(true)
+            setTimeout(() => setShocked(false), 400)
 
             // Start blinking effect (2 seconds)
             setIsBlinking(true)
@@ -198,6 +249,19 @@ export default function Player() {
     const gameStarted = useStore(state => state.gameStarted)
     const gameOver = useStore(state => state.gameOver)
     const speed = useStore(state => state.speed)
+    const lastScoreEvent = useStore(state => state.lastScoreEvent)
+
+    const [scores, setScores] = useState([])
+
+    useEffect(() => {
+        if (lastScoreEvent && gameStarted && !gameOver) {
+            setScores(prev => [...prev, lastScoreEvent])
+        }
+    }, [lastScoreEvent])
+
+    const removeScore = (id) => {
+        setScores(prev => prev.filter(s => s.id !== id))
+    }
 
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -215,16 +279,20 @@ export default function Player() {
                     setPlayerLane(newLane)
                     return newLane
                 })
-            } else if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') && !jumping) {
+            } else if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') && !jumping && !sliding) {
                 setJumping(true)
                 setJumpStartTime(Date.now())
                 playJumpSound()
+            } else if ((e.key === 'ArrowDown' || e.key === 's') && !jumping && !sliding) {
+                setSliding(true)
+                setSlideStartTime(Date.now())
+                // Optional: play slide sound
             }
         }
 
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [gameStarted, gameOver, jumping])
+    }, [gameStarted, gameOver, jumping, sliding])
 
     useFrame((state, delta) => {
         if (!mesh.current) return
@@ -245,9 +313,20 @@ export default function Player() {
                 setJumping(false)
             }
         }
+        // Sliding Logic
+        else if (sliding) {
+            const timeElapsed = (Date.now() - slideStartTime) / 1000
+            if (timeElapsed < JUMP_DURATION) { // Same duration as jump
+                // Visuals handled in RobotCharacter, here we just keep state
+                mesh.current.position.y = 0.3 // Stay on ground
+            } else {
+                setSliding(false)
+            }
+        }
 
         // Update global Y and X state for collision detection
-        setPlayerY(mesh.current.position.y)
+        // Semi-hack: If sliding, report a lower Y to the store so we can dodge High Obstacles
+        setPlayerY(sliding ? 0.0 : mesh.current.position.y)
         setPlayerX(mesh.current.position.x)
 
         // removed rolling effect
@@ -275,9 +354,14 @@ export default function Player() {
             <group ref={mesh} position={[0, 0.3, 0]} castShadow>
                 <RobotCharacter
                     isJumping={jumping}
+                    isSliding={sliding}
                     speed={speed}
                     color={playerColor}
+                    shocked={shocked}
                 />
+                {scores.map(s => (
+                    <FloatingScore key={s.id} points={s.points} onComplete={() => removeScore(s.id)} />
+                ))}
             </group>
         </group>
     )

@@ -38,8 +38,11 @@ export default function MobileControls() {
                 // Vertical Swipe or Tap
                 if (Math.abs(diffY) > 30) {
                     if (diffY < 0) {
-                        // Swipe Up - DISABLED as per request
-                        // dispatchKey(' ')
+                        // Swipe Up - Jump
+                        dispatchKey('ArrowUp')
+                    } else {
+                        // Swipe Down - Slide
+                        dispatchKey('ArrowDown')
                     }
                 } else {
                     // Tap (short movement)
@@ -53,11 +56,17 @@ export default function MobileControls() {
             window.dispatchEvent(event)
         }
 
-        window.addEventListener('touchstart', handleTouchStart)
+        const handleTouchMove = (e) => {
+            e.preventDefault() // Prevent pull-to-refresh / scrolling
+        }
+
+        window.addEventListener('touchstart', handleTouchStart, { passive: false })
+        window.addEventListener('touchmove', handleTouchMove, { passive: false })
         window.addEventListener('touchend', handleTouchEnd)
 
         return () => {
             window.removeEventListener('touchstart', handleTouchStart)
+            window.removeEventListener('touchmove', handleTouchMove)
             window.removeEventListener('touchend', handleTouchEnd)
         }
     }, [])

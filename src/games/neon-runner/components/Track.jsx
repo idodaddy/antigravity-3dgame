@@ -8,12 +8,24 @@ import { playCrashSound, playCollectSound } from '../audio'
 // Constants imported from generator
 const BASE_SPEED = 10 // Approximate base speed for calculation
 
-function Obstacle({ position }) {
+function Obstacle({ position, type }) {
+    const isHigh = type === 'high'
     return (
-        <mesh position={position} castShadow receiveShadow>
-            <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color="#ff0055" emissive="#ff0055" emissiveIntensity={0.8} />
-        </mesh>
+        <group position={position}>
+            <mesh castShadow receiveShadow>
+                <boxGeometry args={[1, 1, 1]} />
+                <meshStandardMaterial color="#ff0055" emissive="#ff0055" emissiveIntensity={0.8} />
+            </mesh>
+            {isHigh && (
+                // Fake Shadow Decal on the ground
+                // Position relative to obstacle center. Obstacle is at y=1.4. Ground is at y=0 (relative to segment)
+                // We need to place it at y = -position[1] + 0.02 (local 0 + slight offset)
+                <mesh position={[0, -position[1] + 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                    <circleGeometry args={[0.6, 32]} />
+                    <meshBasicMaterial color="#FFFF00" transparent opacity={0.6} />
+                </mesh>
+            )}
+        </group>
     )
 }
 
@@ -45,7 +57,8 @@ function Mineral({ position, type }) {
     const halo = useRef()
     const isHigh = position[1] > 1.0
     const isStar = type === 'star'
-    const color = isStar ? "#ffff00" : "#00ffff" // Yellow for star, Cyan for min
+    // Yellow for star, Cyan for min
+    const color = isStar ? "#ffff00" : "#00ffff"
 
     useFrame((state, delta) => {
         if (mesh.current) {
@@ -109,14 +122,14 @@ function Segment({ position, obstacles, minerals }) {
             {/* Ground */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, SEGMENT_LENGTH / 2]} receiveShadow>
                 <planeGeometry args={[20, SEGMENT_LENGTH]} />
-                <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0.2} />
+                <meshStandardMaterial color="#202045" roughness={0.8} metalness={0.2} />
                 {/* Grid lines for synthwave look */}
-                <gridHelper args={[20, 20, 0xff00cc, 0x222222]} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} />
+                <gridHelper args={[20, 20, 0xff00cc, 0x443366]} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} />
             </mesh>
 
             {/* Obstacles */}
             {obstacles.map((obs, i) => (
-                <Obstacle key={`obs-${i}`} position={obs.position} />
+                <Obstacle key={`obs-${i}`} position={obs.position} type={obs.type} />
             ))}
 
             {/* Minerals */}
@@ -230,22 +243,35 @@ export default function Track() {
 
                 // Check Z distance
                 // Obstacle depth 1 -> radius 0.5. Player depth 0.6 -> radius 0.3. Sum = 0.8.
-                // Give a little buffer, say 0.9
+                // Critical Hit Box logic
                 if (Math.abs(obsZ) < 0.9) {
                     // Check Lane
-                    // Player lane is integer -1, 0, 1. Obs lane is -3, 0, 3.
                     if (obsLane === playerLane * 3) {
-                        // Check Vertical Collision
-                        // Obstacle height 0.8. Top is 0.8.
-                        // Player size 0.6. Bottom is playerY - 0.3.
                         const playerY = useStore.getState().playerY
-                        // Forgiveness: hit if player bottom is below obstacle top (minus buffer)
-                        // If player bottom > 0.6, they clear the 0.8 obstacle (very forgiving)
-                        if (playerY - 0.3 < 0.6) {
-                            if (Date.now() - lastHitTime.current > 1000) { // 1 second invulnerability
-                                hit()
-                                playCrashSound()
-                                lastHitTime.current = Date.now()
+
+                        if (obs.type === 'high') {
+                            // High Obstacle (Head Bonker)
+                            // Hit if standing (playerY approx 0.3) or jumping up into it
+                            // Safe if sliding (playerY reported as 0.0)
+                            // Threshold: 0.5
+                            if (playerY > 0.1) {
+                                if (Date.now() - lastHitTime.current > 1000) {
+                                    hit()
+                                    playCrashSound()
+                                    lastHitTime.current = Date.now()
+                                }
+                            }
+                        } else {
+                            // Low Obstacle (Ground)
+                            // Hit if bottom is low
+                            // Safe if Jumping (playerY > 1.0)
+                            // Logic: playerY (center) - 0.3 (size) < 0.6 (top of low obs)
+                            if (playerY < 0.9) { // slightly generous jump clearance
+                                if (Date.now() - lastHitTime.current > 1000) {
+                                    hit()
+                                    playCrashSound()
+                                    lastHitTime.current = Date.now()
+                                }
                             }
                         }
                     }
@@ -274,7 +300,7 @@ export default function Track() {
                         // Collection radius ~0.8
                         if (distSq < 0.8 * 0.8) {
                             // Collected!
-                            const points = min.type === 'star' ? 5 : 1
+                            const points = min.type === 'star' ? 10 : 1
                             collectMineral(points)
                             playCollectSound()
                             collected = true
