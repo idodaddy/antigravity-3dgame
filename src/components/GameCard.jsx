@@ -24,7 +24,7 @@ export default function GameCard({ title, id, color, link, image, compact = fals
                         </svg>
                     </div>
 
-                    <h3 className={`${compact ? 'text-lg' : 'text-2xl'} font-black text-white tracking-wide uppercase mb-1 leading-tight`}>
+                    <h3 className={`${compact ? 'text-lg' : 'text-2xl'} font-black text-white tracking-wide uppercase mb-1 leading-tight drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]`}>
                         {title}
                     </h3>
 
@@ -38,7 +38,7 @@ export default function GameCard({ title, id, color, link, image, compact = fals
                 {/* Expanded Actions - Always visible/accessible on compact/mobile via full card link, but keeping button for consistency */}
                 <div className={`absolute bottom-0 left-0 right-0 p-6 flex gap-3 ${compact ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0'} transition-all duration-500 delay-100`}>
                     <Button to={link} variant="primary" className="flex-1 py-2 text-sm">
-                        Play
+                        PLAY
                     </Button>
                 </div>
             </div>

@@ -17,20 +17,51 @@ function Obstacle({ position }) {
     )
 }
 
+// Star Shape Definition
+const starShape = new THREE.Shape()
+const pts = 5
+const outerRadius = 0.4
+const innerRadius = 0.2
+for (let i = 0; i < pts * 2; i++) {
+    const r = i % 2 === 0 ? outerRadius : innerRadius
+    const a = (i / (pts * 2)) * Math.PI * 2
+    const x = Math.cos(a) * r
+    const y = Math.sin(a) * r
+    if (i === 0) starShape.moveTo(x, y)
+    else starShape.lineTo(x, y)
+}
+starShape.closePath()
+
+const starExtrudeSettings = {
+    depth: 0.1,
+    bevelEnabled: true,
+    bevelThickness: 0.02,
+    bevelSize: 0.02,
+    bevelSegments: 2
+}
+
 function Mineral({ position, type }) {
     const mesh = useRef()
+    const halo = useRef()
     const isHigh = position[1] > 1.0
     const isStar = type === 'star'
     const color = isStar ? "#ffff00" : "#00ffff" // Yellow for star, Cyan for min
 
     useFrame((state, delta) => {
         if (mesh.current) {
+            // Rotate around Vertical Axis (Y)
             mesh.current.rotation.y += delta * 2
-            mesh.current.rotation.x += delta
 
-            // Bobbing for high minerals
-            if (isHigh) {
-                mesh.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 3) * 0.2
+            // Bobbing
+            const t = state.clock.elapsedTime
+            const bob = Math.sin(t * 3) * 0.1
+            mesh.current.position.y = position[1] + bob
+
+            // Halo Pulse
+            if (halo.current) {
+                halo.current.rotation.z -= delta // Counter-rotate halo
+                const scale = 1 + Math.sin(t * 5) * 0.1
+                halo.current.scale.set(scale, scale, scale)
             }
         }
     })
@@ -38,10 +69,28 @@ function Mineral({ position, type }) {
     return (
         <group position={[position[0], 0, position[2]]}>
             {/* The Mineral Itself */}
-            <mesh ref={mesh} position={[0, position[1], 0]} castShadow>
-                {isStar ? <icosahedronGeometry args={[0.4, 0]} /> : <octahedronGeometry args={[0.3, 0]} />}
-                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.8} />
-            </mesh>
+            <group ref={mesh} position={[0, position[1], 0]}>
+                {isStar ? (
+                    <group rotation={[0, 0, 0]}> {/* Stand upright (X-Y plane) */}
+                        {/* Star Body */}
+                        <mesh position={[0, 0, -0.05]}> {/* Center depth */}
+                            <extrudeGeometry args={[starShape, starExtrudeSettings]} />
+                            <meshStandardMaterial color="#ffff00" emissive="#ffff00" emissiveIntensity={1.0} />
+                        </mesh>
+
+                        {/* Neon Halo */}
+                        <mesh ref={halo}>
+                            <torusGeometry args={[0.6, 0.02, 8, 32]} />
+                            <meshBasicMaterial color="#ffff00" transparent opacity={0.5} />
+                        </mesh>
+                    </group>
+                ) : (
+                    <mesh castShadow>
+                        <octahedronGeometry args={[0.3, 0]} />
+                        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.8} />
+                    </mesh>
+                )}
+            </group>
 
             {/* Tether for High Minerals */}
             {isHigh && (
@@ -216,12 +265,12 @@ export default function Track() {
                         // Check 3D Distance for smooth collection
                         const playerX = useStore.getState().playerX
                         const playerY = useStore.getState().playerY
+                        // dz is minZ (relative to player at 0)
 
                         const dx = min.position[0] - playerX
                         const dy = min.position[1] - playerY
-                        // dz is minZ (relative to player at 0)
-
                         const distSq = dx * dx + dy * dy + minZ * minZ
+
                         // Collection radius ~0.8
                         if (distSq < 0.8 * 0.8) {
                             // Collected!

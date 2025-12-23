@@ -20,7 +20,6 @@ export default function Home() {
                         color="from-cyan-500 to-blue-600"
                         link="/game/neon-runner"
                         image="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070&auto=format&fit=crop"
-                        compact={true}
                     />
 
                     {/* Cyber Stack */}
@@ -30,12 +29,11 @@ export default function Home() {
                         color="from-pink-500 to-purple-600"
                         link="/game/cyber-stack"
                         image="https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=2070&auto=format&fit=crop"
-                        compact={true}
                     />
 
                     {/* Placeholder Games (4 items to make total 6) */}
                     {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="group relative w-full aspect-square rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex flex-col items-center justify-center transition-all hover:border-white/20 hover:bg-white/10">
+                        <div key={i} className="group relative w-full aspect-[16/9] rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex flex-col items-center justify-center transition-all hover:border-white/20 hover:bg-white/10">
                             <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/50" />
                             <span className="text-3xl mb-2 text-white/20 group-hover:text-white/40 transition-colors font-thin">+</span>
                             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 group-hover:text-white/60 transition-colors">Coming Soon</span>
@@ -43,6 +41,11 @@ export default function Home() {
                     ))}
                 </div>
             </section>
+
+            {/* AdSense Banner (Moved to bottom) */}
+            <div className="mb-12">
+                <AdBanner />
+            </div>
         </Layout>
     )
 }

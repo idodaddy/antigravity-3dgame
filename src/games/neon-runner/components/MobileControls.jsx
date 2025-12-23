@@ -38,8 +38,8 @@ export default function MobileControls() {
                 // Vertical Swipe or Tap
                 if (Math.abs(diffY) > 30) {
                     if (diffY < 0) {
-                        // Swipe Up
-                        dispatchKey(' ')
+                        // Swipe Up - DISABLED as per request
+                        // dispatchKey(' ')
                     }
                 } else {
                     // Tap (short movement)

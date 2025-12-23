@@ -12,6 +12,67 @@ import { startBGM, stopBGM } from './audio'
 import { submitScore } from '../../services/leaderboardService'
 import { getUserID, getUserNickname } from '../../utils/userStore'
 
+function TutorialOverlay() {
+    const [visible, setVisible] = React.useState(true)
+    const gameStarted = useStore(state => state.gameStarted)
+
+    useEffect(() => {
+        if (gameStarted) {
+            const timer = setTimeout(() => setVisible(false), 3000)
+            return () => clearTimeout(timer)
+        }
+    }, [gameStarted])
+
+    if (!visible || !gameStarted) return null
+
+    return (
+        <div className="absolute inset-0 z-50 flex items-end justify-center pointer-events-none pb-24">
+            <div className="bg-black/80 backdrop-blur-md border border-white/10 px-10 py-6 rounded-3xl flex flex-row items-center gap-8 animate-in fade-in slide-in-from-bottom-10 duration-500 shadow-2xl">
+
+                {/* Swipe Instruction with Animation */}
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-16 h-16 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 relative overflow-hidden">
+                        {/* Hand Icon Animating */}
+                        <div className="animate-[swipe_1.5s_ease-in-out_infinite]">
+                            <svg className="w-8 h-8 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                            </svg>
+                        </div>
+                        {/* Arrows indicating direction */}
+                        <div className="absolute inset-0 flex items-center justify-between px-1 opacity-30">
+                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                        </div>
+                    </div>
+                    <span className="text-xs font-bold text-white/80 uppercase tracking-widest">Swipe</span>
+                </div>
+
+                {/* Divider */}
+                <div className="w-px h-12 bg-white/20" />
+
+                {/* Tap Instruction */}
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-16 h-16 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 relative">
+                        <div className="w-4 h-4 rounded-full bg-yellow-400 animate-ping absolute" />
+                        <div className="w-4 h-4 rounded-full bg-yellow-400 relative z-10" />
+                    </div>
+                    <span className="text-xs font-bold text-white/80 uppercase tracking-widest">Jump</span>
+                </div>
+
+            </div>
+
+            {/* Inject custom keyframes for swipe */}
+            <style>{`
+                @keyframes swipe {
+                    0%, 100% { transform: translateX(0) rotate(0deg); }
+                    25% { transform: translateX(-12px) rotate(-10deg); }
+                    75% { transform: translateX(12px) rotate(10deg); }
+                }
+            `}</style>
+        </div>
+    )
+}
+
 function GameLogic() {
 
     const gameStarted = useStore(state => state.gameStarted)
@@ -67,17 +128,6 @@ function GameLogic() {
         // Score is now handled by collecting minerals
     })
 
-    // We can't easily pass rank to HUD via store without adding it to store.
-    // However, HUD is a sibling. Let's use the store to hold 'lastRank' if we want clean architecture,
-    // or just assume HUD can read it?
-    // Wait, HUD calls GameEndOverlay. 
-    // Let's add 'rank' to the Zustand store for simplicity of passing data.
-
-    // Ideally we update the store with the rank.
-    // Let's modify the store in a separate step?
-    // Actually, HUD reads from store. Let's create a temp store mechanism or just pass it if possible.
-    // Since HUD is a component inside Game.jsx, we can pass props if HUD was a child of GameLogic (it isn't).
-
     // Quick fix: Add setRank to store.
     const setGameRank = useStore(state => state.setRank)
     useEffect(() => {
@@ -103,10 +153,14 @@ function ResponsiveCamera() {
         const baseZ = 6
         const newZ = Math.max(baseZ, targetDist)
 
+        // Adjust Camera Height based on Aspect Ratio
+        // PC (Wide, aspect > 1): Lower camera (e.g., 4.5) to raise runner
+        // Mobile (Tall, aspect < 1): Higher camera (e.g., 7.5) to lower runner
+        const targetY = aspect > 1 ? 4.5 : 7.5
+
         // Smoothly interpolate
         camera.position.z += (newZ - camera.position.z) * 0.1
-        // Maintain height
-        if (camera.position.y < 5.8) camera.position.y += (6 - camera.position.y) * 0.1
+        camera.position.y += (targetY - camera.position.y) * 0.1
     })
     return null
 }
@@ -141,6 +195,7 @@ export default function Game() {
             </Canvas>
             <MobileControls />
             <HUD />
+            <TutorialOverlay />
         </div>
     )
 }
