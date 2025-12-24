@@ -1,8 +1,9 @@
 import { create } from 'zustand'
+import { playPlaceSound, playGameOverSound, playPerfectSound } from './utils/sound'
 
 const INITIAL_SIZE = [3, 1, 3]
 const INITIAL_POSITION = [0, 0, 0]
-const BASE_SPEED = 2.0 // Increased speed for challenge
+const BASE_SPEED = 1.8 // Reduced speed by 10% (from 2.0)
 
 export const useStore = create((set, get) => ({
     stack: [],
@@ -13,6 +14,8 @@ export const useStore = create((set, get) => ({
     score: 0,
     cameraHeight: 5,
     rank: null,
+    lastAccuracy: 0,
+    showAccuracy: false,
 
     setRank: (rank) => set({ rank }),
 
@@ -23,8 +26,11 @@ export const useStore = create((set, get) => ({
             score: 0,
             gameOver: false,
             gameStarted: true,
+            gameStarted: true,
             cameraHeight: 5,
             rank: null,
+            lastAccuracy: 0,
+            showAccuracy: false,
             activeBlock: {
                 position: [0, 1, 0], // Start one level up
                 size: INITIAL_SIZE,
@@ -86,11 +92,28 @@ export const useStore = create((set, get) => ({
 
         if (overlap <= 0) {
             // Missed!
+            playGameOverSound()
             set({ gameOver: true })
             return
         }
 
         // Hit!
+        // Calculate accuracy
+        const maxOverlap = lastBlock.size[axisIdx]
+        const accuracy = Math.min(100, Math.max(0, (overlap / maxOverlap) * 100))
+
+        // Sound
+        // Check for perfect match (tolerance 0.1)
+        if (Math.abs(delta) < 0.1) {
+            playPerfectSound()
+        } else {
+            playPlaceSound(score)
+        }
+
+        set({ lastAccuracy: Math.floor(accuracy), showAccuracy: true })
+        // Auto-hide handled by UI component or we can toggle it here if we want strict control, 
+        // but UI timeout is better for animation. We just set it true here.
+
         // New size
         const newSize = [...size]
         newSize[axisIdx] = overlap
@@ -123,7 +146,8 @@ export const useStore = create((set, get) => ({
         debrisPos[axisIdx] = lastBlock.position[axisIdx] + (lastBlock.size[axisIdx] / 2 + debrisSize[axisIdx] / 2) * sign
 
         // Generate next color (Hue shift)
-        const hue = (score * 10 + 300) % 360
+        // Increased step to 25 for better distinction
+        const hue = (score * 25 + 300) % 360
         const nextColor = `hsl(${hue}, 100%, 50%)`
 
         const nextDirection = direction === 'x' ? 'z' : 'x'

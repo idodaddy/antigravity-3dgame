@@ -2,6 +2,22 @@ import React from 'react'
 import Button from './Button'
 
 export default function GameStartOverlay({ title, instructions, onStart }) {
+    const handleStart = () => {
+        // Try to enter fullscreen on mobile/touch devices
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            try {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log('Fullscreen request failed:', err);
+                    });
+                }
+            } catch (e) {
+                console.log('Fullscreen error:', e);
+            }
+        }
+        onStart()
+    }
+
     return (
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center pointer-events-auto animate-fade-in p-4 z-50">
             <div className="relative bg-black/90 border border-white/10 rounded-2xl p-8 max-w-sm w-full shadow-[0_0_50px_rgba(6,182,212,0.2)] overflow-hidden">
@@ -24,7 +40,7 @@ export default function GameStartOverlay({ title, instructions, onStart }) {
                     )}
 
                     <div className="grid grid-cols-1 gap-4 w-full">
-                        <Button onClick={onStart} variant="primary" className="py-4 text-xl shadow-[0_0_30px_rgba(6,182,212,0.4)]">
+                        <Button onClick={handleStart} variant="primary" className="py-4 text-xl shadow-[0_0_30px_rgba(6,182,212,0.4)]">
                             Start Game
                         </Button>
                         <Button to="/" variant="outline" className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>

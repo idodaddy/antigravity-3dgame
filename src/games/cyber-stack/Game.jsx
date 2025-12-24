@@ -24,12 +24,12 @@ function CameraController() {
 function GameContent() {
     const startGame = useStore(state => state.startGame)
     const placeBlock = useStore(state => state.placeBlock)
+    const reset = useStore(state => state.reset)
     const gameStarted = useStore(state => state.gameStarted)
     const gameOver = useStore(state => state.gameOver)
 
     useEffect(() => {
-        // Remove auto-start
-        // startGame()
+        reset()
 
         let lastActionTime = 0
 

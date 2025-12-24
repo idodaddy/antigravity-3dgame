@@ -1,13 +1,25 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 
-export default function AdBanner({ className, dataAdClient = "ca-pub-YOUR_PUBLISHER_ID", dataAdSlot = "1234567890" }) {
+export default function AdBanner({ className, dataAdClient = "ca-pub-9323506568151323", dataAdSlot = "3359976647" }) {
+    const adPushed = useRef(false);
+    const location = useLocation();
+
     useEffect(() => {
+        // Reset on route change if needed, but for now just safety check
+        if (adPushed.current) return;
+
         try {
-            (window.adsbygoogle = window.adsbygoogle || []).push({});
+            // Check if adblocker is active by looking for the script or global object
+            // But mainly just wrap the push safely
+            if (typeof window !== 'undefined') {
+                (window.adsbygoogle = window.adsbygoogle || []).push({});
+                adPushed.current = true;
+            }
         } catch (e) {
-            console.error("AdSense error:", e);
+            console.error("AdSense error (likely AdBlock):", e);
         }
-    }, []);
+    }, [location.pathname]); // Re-run on route change if component persists
 
     return (
         <div className={`w-full h-32 rounded-2xl overflow-hidden relative group bg-gray-900/50 backdrop-blur-sm border border-white/5 ${className}`}>

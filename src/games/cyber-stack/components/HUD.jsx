@@ -11,6 +11,18 @@ export default function HUD() {
     const startGame = useStore(state => state.startGame)
 
     const rank = useStore(state => state.rank)
+    const lastAccuracy = useStore(state => state.lastAccuracy)
+    const showAccuracy = useStore(state => state.showAccuracy)
+
+    // Auto-hide accuracy
+    React.useEffect(() => {
+        if (showAccuracy) {
+            const timer = setTimeout(() => {
+                useStore.setState({ showAccuracy: false })
+            }, 1000)
+            return () => clearTimeout(timer)
+        }
+    }, [showAccuracy])
 
     return (
         <div className="absolute inset-0 pointer-events-none">
@@ -20,6 +32,19 @@ export default function HUD() {
                     {score}
                 </h1>
                 <p className="text-cyan-400 text-xs md:text-sm font-bold tracking-widest uppercase">Blocks Stacked</p>
+            </div>
+
+            {/* Accuracy Popup */}
+            <div className="absolute top-[25%] left-1/2 -translate-x-1/2 pointer-events-none z-20">
+                <div
+                    className={`text-6xl font-black italic transition-all duration-300 ${showAccuracy ? 'opacity-100 scale-110 translate-y-0' : 'opacity-0 scale-50 translate-y-10'}`}
+                    style={{
+                        color: lastAccuracy >= 95 ? '#00ff00' : (lastAccuracy >= 80 ? '#ffff00' : '#ff0000'),
+                        textShadow: '0 0 20px currentColor, 2px 2px 0 #000'
+                    }}
+                >
+                    {lastAccuracy}%
+                </div>
             </div>
 
             {/* Game Over */}
