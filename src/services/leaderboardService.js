@@ -1,4 +1,5 @@
 import { db } from '../firebase';
+
 import { collection, addDoc, query, where, getDocs, updateDoc, doc, limit, orderBy } from "firebase/firestore";
 
 const USERS_COLLECTION = 'users';
@@ -75,6 +76,9 @@ export const getRankForScore = async (gameId, score) => {
 
 export const submitScore = async (gameId, uuid, nickname, score) => {
     try {
+        if (score === undefined || score === null) score = 0;
+        if (!uuid) return null;
+
         // Ensure user is 'active' or known
         await saveUser(uuid, nickname);
 

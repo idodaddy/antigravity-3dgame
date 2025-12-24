@@ -10,14 +10,7 @@ export const useStore = create((set, get) => ({
     snake: INITIAL_SNAKE,
     food: [5, 5],
     direction: INITIAL_DIRECTION,
-    nextDirection: INITIAL_DIRECTION,
-    gameStarted: false,
-    gameOver: false,
-    score: 0,
-    speed: BASE_SPEED,
-    rank: null,
-
-    setRank: (rank) => set({ rank }),
+    directionQueue: [], // Queue for buffered inputs
 
     startGame: () => {
         set({
@@ -25,6 +18,7 @@ export const useStore = create((set, get) => ({
             food: generateFood(INITIAL_SNAKE),
             direction: INITIAL_DIRECTION,
             nextDirection: INITIAL_DIRECTION,
+            directionQueue: [],
             gameStarted: true,
             gameOver: false,
             score: 0,
@@ -38,23 +32,45 @@ export const useStore = create((set, get) => ({
             gameStarted: false,
             gameOver: false,
             score: 0,
-            snake: INITIAL_SNAKE
+            snake: INITIAL_SNAKE,
+            directionQueue: []
         })
     },
 
-    setDirection: (dir) => {
-        const { direction } = get();
-        // Prevent 180 degree turns
-        if (dir[0] === -direction[0] && dir[1] === -direction[1]) return;
-        set({ nextDirection: dir });
+    setDirection: (inputDir) => {
+        set((state) => {
+            // Determine the reference direction: either the last queued move or current direction
+            const lastDir = state.directionQueue.length > 0
+                ? state.directionQueue[state.directionQueue.length - 1]
+                : state.direction;
+
+            // Prevent 180 degree turns based on the LAST PLANNED move
+            if (inputDir[0] === -lastDir[0] && inputDir[1] === -lastDir[1]) return {};
+
+            // Should also prevent clogging the queue with too many moves? Max 3?
+            if (state.directionQueue.length >= 3) return {};
+
+            return { directionQueue: [...state.directionQueue, inputDir] };
+        });
     },
 
     tick: () => {
-        const { snake, nextDirection, food, score, speed, gameOver, gameStarted } = get();
-        if (!gameStarted || gameOver) return;
+        const state = get();
+        if (!state.gameStarted || state.gameOver) return;
+
+        let { snake, direction, directionQueue, food, score, speed } = state;
+
+        // Process Input Queue
+        let nextDir = direction;
+        let newQueue = directionQueue;
+
+        if (directionQueue.length > 0) {
+            nextDir = directionQueue[0];
+            newQueue = directionQueue.slice(1);
+        }
 
         const head = snake[0];
-        const newHead = [head[0] + nextDirection[0], head[1] + nextDirection[1]];
+        const newHead = [head[0] + nextDir[0], head[1] + nextDir[1]];
 
         // Wall Collision
         if (Math.abs(newHead[0]) > BOARD_SIZE / 2 || Math.abs(newHead[1]) > BOARD_SIZE / 2) {
@@ -84,13 +100,15 @@ export const useStore = create((set, get) => ({
                 score: newScore,
                 food: generateFood(newSnake),
                 speed: newSpeed,
-                direction: nextDirection
+                direction: nextDir,
+                directionQueue: newQueue
             });
         } else {
             newSnake.pop(); // Remove tail
             set({
                 snake: newSnake,
-                direction: nextDirection
+                direction: nextDir,
+                directionQueue: newQueue
             });
         }
     }
@@ -98,13 +116,28 @@ export const useStore = create((set, get) => ({
 
 const generateFood = (snake) => {
     let newFood;
-    while (true) {
+    let attempts = 0;
+    while (attempts < 50) {
         const x = Math.floor(Math.random() * BOARD_SIZE) - BOARD_SIZE / 2;
         const z = Math.floor(Math.random() * BOARD_SIZE) - BOARD_SIZE / 2;
         newFood = [x, z];
+
         // Check if on snake
         const onSnake = snake.some(s => s[0] === x && s[1] === z);
-        if (!onSnake) break;
+        if (!onSnake) return newFood;
+        attempts++;
     }
-    return newFood;
+
+    // Fallback: Linear search if random fails
+    for (let x = -BOARD_SIZE / 2; x < BOARD_SIZE / 2; x++) {
+        for (let z = -BOARD_SIZE / 2; z < BOARD_SIZE / 2; z++) {
+            const onSnake = snake.some(s => s[0] === x && s[1] === z);
+            if (!onSnake) {
+                return [x, z];
+            }
+        }
+    }
+
+    // Win condition or board full? Just return current food or null
+    return [0, 0]; // Should handle properly but for now prevents crash.
 };

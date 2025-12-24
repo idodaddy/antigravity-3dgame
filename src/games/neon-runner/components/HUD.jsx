@@ -2,6 +2,7 @@ import React from 'react'
 import { useStore } from '../store'
 import GameEndOverlay from '../../../components/GameEndOverlay'
 import GameStartOverlay from '../../../components/GameStartOverlay'
+import GameBackButton from '../../../components/GameBackButton'
 
 export default function HUD() {
     const score = useStore(state => state.score)
@@ -156,6 +157,7 @@ export default function HUD() {
             )}
 
             {gameOver && <GameEndOverlay score={Math.floor(score)} rank={rank} onRestart={restart} />}
+            <GameBackButton />
         </div>
     )
 }

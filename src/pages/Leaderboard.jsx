@@ -7,7 +7,8 @@ import { getUserID, getUserNickname, setNickname as saveLocalNickname } from '..
 const GAMES = [
     { id: 'neon-runner', name: 'Neon Runner' },
     { id: 'cyber-stack', name: 'Cyber Stack' },
-    { id: 'neon-snake', name: 'Neon Snake' }
+    { id: 'neon-snake', name: 'Neon Snake' },
+    { id: 'astro-defense', name: 'Astro Defense' }
 ];
 
 export default function Leaderboard() {

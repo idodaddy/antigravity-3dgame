@@ -36,6 +36,13 @@ export default function Home() {
                             link: "/game/neon-snake",
                             image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop"
                         },
+                        {
+                            id: "astro-defense",
+                            title: "Astro Defense",
+                            color: "from-indigo-500 to-purple-600",
+                            link: "/game/astro-defense",
+                            image: "/astro-defense-card.png"
+                        },
                         // Placeholders
                         ...[1, 2, 3, 4].map(i => ({ id: `placeholder-${i}`, isPlaceholder: true }))
                     ].map((game, index) => (

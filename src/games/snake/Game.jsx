@@ -150,7 +150,9 @@ function GameLogic() {
             const nickname = getUserNickname()
             submitScore('neon-snake', uuid, nickname, score).then(r => setRank(r))
         }
-    }, [gameStarted, gameOver, score])
+
+        return () => stopBGM()
+    }, [gameStarted, gameOver])
 
     return null
 }

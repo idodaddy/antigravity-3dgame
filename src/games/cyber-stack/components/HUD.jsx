@@ -2,6 +2,7 @@ import React from 'react'
 import { useStore } from '../store'
 import GameEndOverlay from '../../../components/GameEndOverlay'
 import GameStartOverlay from '../../../components/GameStartOverlay'
+import GameBackButton from '../../../components/GameBackButton'
 
 export default function HUD() {
     const score = useStore(state => state.score)
@@ -26,6 +27,7 @@ export default function HUD() {
 
     return (
         <div className="absolute inset-0 pointer-events-none">
+            <GameBackButton />
             {/* Score */}
             <div className="absolute top-8 left-1/2 -translate-x-1/2 text-center w-full px-4">
                 <h1 className="text-4xl md:text-6xl font-black text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">

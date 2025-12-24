@@ -3,8 +3,11 @@ import Button from './Button'
 
 export default function GameStartOverlay({ title, instructions, onStart }) {
     const handleStart = () => {
-        // Try to enter fullscreen on mobile/touch devices
-        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+
+        // Strict mobile check using User Agent to avoid triggering on Desktop with touch or small screens
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
+        if (isMobile) {
             try {
                 if (document.documentElement.requestFullscreen) {
                     document.documentElement.requestFullscreen().catch(err => {

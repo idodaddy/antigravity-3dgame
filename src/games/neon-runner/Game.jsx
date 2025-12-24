@@ -109,7 +109,7 @@ function GameLogic() {
         return () => {
             // Stop BGM on unmount
             stopBGM()
-            reset() // Optional: reset on leave too
+            reset()
         }
     }, [])
 
