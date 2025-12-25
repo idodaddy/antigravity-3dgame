@@ -8,7 +8,9 @@ const GAMES = [
     { id: 'neon-runner', name: 'Neon Runner' },
     { id: 'cyber-stack', name: 'Cyber Stack' },
     { id: 'neon-snake', name: 'Neon Snake' },
-    { id: 'astro-defense', name: 'Astro Defense' }
+    { id: 'astro-defense', name: 'Astro Defense' },
+    { id: 'tank-battle', name: 'Tank Battle' }
+
 ];
 
 export default function Leaderboard() {

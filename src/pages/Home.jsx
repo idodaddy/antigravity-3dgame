@@ -43,6 +43,14 @@ export default function Home() {
                             link: "/game/astro-defense",
                             image: "/astro-defense-card.png"
                         },
+                        {
+                            id: "tank-battle",
+                            title: "Tank Battle",
+                            color: "from-yellow-400 to-orange-600",
+                            link: "/game/tank-battle",
+                            image: "https://images.unsplash.com/photo-1555580199-52d362bd43bd?q=80&w=2070&auto=format&fit=crop"
+                        },
+
                         // Placeholders
                         ...[1, 2, 3, 4].map(i => ({ id: `placeholder-${i}`, isPlaceholder: true }))
                     ].map((game, index) => (
